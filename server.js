@@ -8,6 +8,11 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
+// Serve index.html for the root URL
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Handle suggestion submissions
 app.post('/suggest', (req, res) => {
     const { username, suggestion, ip } = req.body;
@@ -38,11 +43,6 @@ app.post('/suggest', (req, res) => {
             res.sendStatus(200);
         });
     });
-});
-
-// Serve static files (HTML, etc.)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Start the server

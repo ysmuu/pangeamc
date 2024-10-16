@@ -39,7 +39,7 @@ app.post('/suggest', (req, res) => {
     }
 
     // Create a log entry
-    const logEntry = { username, suggestion, ip };
+    const logEntry = { username, suggestion, ip, timestamp: new Date().toISOString() };
 
     // Write the suggestion to suggestions.json
     fs.readFile('suggestions.json', (err, data) => {
@@ -57,10 +57,59 @@ app.post('/suggest', (req, res) => {
                 return res.sendStatus(500);
             }
 
+            // Send the suggestion to Discord webhook
+            sendDiscordWebhook(username, suggestion);
             res.sendStatus(200); // Success
         });
     });
 });
+
+// Send Discord webhook
+function sendDiscordWebhook(username, suggestion) {
+    const webhookURL = 'https://discord.com/api/webhooks/1296221578777985115/4Sdl7190jmV7QI7vR6ogXQI2grBy0yoOHWv_4Hv4btD7lEX8NyWeGPIUiPBt7mteTsVo'; // Your webhook URL
+
+    const payload = {
+        embeds: [{
+            title: "New Minecraft Server Suggestion",
+            description: `A new suggestion has been submitted by **${username}**`,
+            color: 5814783,
+            fields: [
+                {
+                    name: "User",
+                    value: username,
+                    inline: true
+                },
+                {
+                    name: "Suggestion",
+                    value: suggestion,
+                    inline: false
+                }
+            ],
+            footer: {
+                text: "PangeaMC stupid suggestion bot",
+                icon_url: "https://i.imgur.com/Y1dPLe5.png"
+            },
+            timestamp: new Date().toISOString()
+        }]
+    };
+
+    // Send the webhook to Discord
+    fetch(webhookURL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.error('Error sending webhook:', response.statusText);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending webhook:', error);
+    });
+}
 
 // Start the server
 app.listen(PORT, () => {

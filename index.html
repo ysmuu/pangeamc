@@ -43,6 +43,8 @@
             })
             .then(response => {
                 if (response.ok) {
+                    // Now send the Discord webhook
+                    sendDiscordWebhook(username, suggestion);
                     alert('Thank you for your suggestion!');
                     document.getElementById('suggestionForm').reset();
                 } else {
@@ -54,6 +56,37 @@
                 alert('There was an error connecting to the server.');
             });
         });
+
+        function sendDiscordWebhook(username, suggestion) {
+            const webhookPayload = {
+                embeds: [{
+                    title: "New Minecraft Server Suggestion",
+                    description: `A new suggestion has been submitted by **${username}**`,
+                    color: 5814783,
+                    fields: [
+                        { name: "User", value: username, inline: true },
+                        { name: "Suggestion", value: suggestion, inline: false }
+                    ],
+                    footer: { text: "PangeaMC stupid suggestion bot", icon_url: "https://i.imgur.com/Y1dPLe5.png" },
+                    timestamp: new Date().toISOString()
+                }]
+            };
+
+            // Send the webhook to Discord
+            fetch('https://discord.com/api/webhooks/1296221578777985115/4Sdl7190jmV7QI7vR6ogXQI2grBy0yoOHWv_4Hv4btD7lEX8NyWeGPIUiPBt7mteTsVo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(webhookPayload)
+            })
+            .then(discordResponse => {
+                if (!discordResponse.ok) {
+                    console.error('Error sending webhook to Discord:', discordResponse.statusText);
+                }
+            })
+            .catch(webhookError => {
+                console.error('Error sending webhook to Discord:', webhookError);
+            });
+        }
     </script>
 </body>
 </html>

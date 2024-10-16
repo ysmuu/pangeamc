@@ -1,57 +1,51 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const fs = require('fs');
+const path = require('path');
+
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(bodyParser.json());
-app.use(express.static('public')); // Serve static files (like admin_panel.html)
+app.use(express.json());
+app.use(express.static(path.join(__dirname)));
 
-// Store suggestions in-memory for simplicity (consider using a database for production)
-let suggestions = [];
+// Handle suggestion submissions
+app.post('/suggest', (req, res) => {
+    const { username, suggestion, ip } = req.body;
 
-// API to receive suggestions
-app.post('/api/suggestions', (req, res) => {
-    const { username, suggestion } = req.body;
+    // Create a log entry
+    const logEntry = { username, suggestion, ip };
 
-    // Get user's IP address
-    const userIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-
-    // Log the suggestion with username and IP
-    const logEntry = { username, suggestion, ip: userIP };
-
-    // Add the log entry to the suggestions array
-    suggestions.push(logEntry);
-
-    // Log the suggestion to the console
-    console.log('Received suggestion:', logEntry);
-
-    // Optional: Write the log to a file (e.g., log.txt)
-    fs.appendFile('log.txt', JSON.stringify(logEntry) + '\n', (err) => {
+    // Read existing logs
+    fs.readFile('logs.json', (err, data) => {
         if (err) {
-            console.error('Error logging suggestion:', err);
-            res.status(500).send('Error logging suggestion');
-            return;
+            console.error('Error reading logs:', err);
+            return res.sendStatus(500);
         }
-        res.status(201).send('Suggestion received');
+
+        // Parse existing logs or create a new array
+        const logs = data.length ? JSON.parse(data) : [];
+
+        // Add the new log entry
+        logs.push(logEntry);
+
+        // Write the updated logs back to the file
+        fs.writeFile('logs.json', JSON.stringify(logs, null, 2), err => {
+            if (err) {
+                console.error('Error writing logs:', err);
+                return res.sendStatus(500);
+            }
+
+            res.sendStatus(200);
+        });
     });
 });
 
-// API to fetch suggestions
-app.get('/api/suggestions', (req, res) => {
-    res.json(suggestions);
-});
-
-// API to ban a user
-app.post('/api/ban/:username', (req, res) => {
-    const usernameToBan = req.params.username;
-    // Implement your banning logic here
-    suggestions = suggestions.filter(suggestion => suggestion.username !== usernameToBan);
-    res.status(200).send('User banned');
+// Serve static files (HTML, etc.)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Start the server
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

@@ -11,6 +11,8 @@
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         th, td { padding: 0.8rem; text-align: left; border: 1px solid #444; }
         th { background-color: #3e3e3e; }
+        button { margin-top: 10px; padding: 0.5rem; background-color: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #ff2222; }
     </style>
 </head>
 <body>
@@ -21,23 +23,49 @@
                 <th>Username</th>
                 <th>Suggestion</th>
                 <th>IP Address</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody id="logs"></tbody>
     </table>
 
     <script>
-        fetch('logs.json')
-            .then(response => response.json())
-            .then(data => {
-                const logsElement = document.getElementById('logs');
-                data.forEach(log => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${log.username}</td><td>${log.suggestion}</td><td>${log.ip}</td>`;
-                    logsElement.appendChild(row);
-                });
-            })
-            .catch(error => console.error('Error loading logs:', error));
+        const bannedIPs = new Set();
+
+        // Function to fetch logs and display them
+        function fetchLogs() {
+            fetch('logs.json')
+                .then(response => response.json())
+                .then(data => {
+                    const logsElement = document.getElementById('logs');
+                    logsElement.innerHTML = ''; // Clear the current logs
+
+                    data.forEach(log => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${log.username}</td>
+                            <td>${log.suggestion}</td>
+                            <td>${log.ip}</td>
+                            <td><button onclick="banIP('${log.ip}')">Ban</button></td>
+                        `;
+                        logsElement.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error loading logs:', error));
+        }
+
+        // Function to ban an IP
+        function banIP(ip) {
+            if (bannedIPs.has(ip)) {
+                alert(`IP ${ip} is already banned.`);
+            } else {
+                bannedIPs.add(ip);
+                alert(`IP ${ip} has been banned.`);
+            }
+        }
+
+        // Fetch logs on load
+        fetchLogs();
     </script>
 </body>
 </html>

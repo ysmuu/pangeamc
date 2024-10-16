@@ -14,6 +14,7 @@
         textarea { resize: vertical; }
         button { padding: 0.8rem; width: 100%; border: none; border-radius: 5px; background-color: #00aaff; color: white; font-size: 1rem; cursor: pointer; transition: background-color 0.3s; }
         button:hover { background-color: #008ecc; }
+        hr { margin: 2rem 0; }
     </style>
 </head>
 <body>
@@ -22,14 +23,14 @@
         <form id="loginForm">
             <input type="text" id="adminUsername" placeholder="Admin Username" required><br>
             <input type="password" id="adminPassword" placeholder="Admin Password" required><br>
-            <button type="submit">Login</button>
+            <button type="submit">Login</button> <!-- Login Button -->
         </form>
         <hr> <!-- Divider -->
         <h1>Suggest Features for Our Minecraft Server</h1>
         <form id="suggestionForm">
             <input type="text" id="username" name="username" placeholder="Your Name" required><br>
             <textarea id="suggestion" name="suggestion" rows="4" placeholder="Your Suggestion" required></textarea><br>
-            <button type="submit">Submit</button>
+            <button type="submit">Submit</button> <!-- Suggestion Button -->
         </form>
     </div>
 

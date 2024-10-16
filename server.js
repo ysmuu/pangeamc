@@ -1,7 +1,6 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -42,43 +41,25 @@ app.post('/suggest', (req, res) => {
     // Create a log entry
     const logEntry = { username, suggestion, ip };
 
-    // Read existing suggestions
+    // Write the suggestion to suggestions.json
     fs.readFile('suggestions.json', (err, data) => {
         if (err) {
-            console.error('Error reading suggestions:', err);
-            return res.status(500).send('Error reading suggestions.');
+            console.error('Error reading suggestions file:', err);
+            return res.sendStatus(500);
         }
 
-        // Parse existing suggestions or create a new array
-        let suggestions;
-        try {
-            suggestions = data.length ? JSON.parse(data) : [];
-        } catch (parseErr) {
-            console.error('Error parsing suggestions JSON:', parseErr);
-            return res.status(500).send('Error parsing suggestions.');
-        }
-
-        // Add the new suggestion
+        const suggestions = data.length ? JSON.parse(data) : [];
         suggestions.push(logEntry);
 
-        // Write the updated suggestions back to the file
-        fs.writeFile('suggestions.json', JSON.stringify(suggestions, null, 2), (writeErr) => {
-            if (writeErr) {
-                console.error('Error writing suggestions:', writeErr);
-                return res.status(500).send('Error writing suggestions.');
+        fs.writeFile('suggestions.json', JSON.stringify(suggestions, null, 2), (err) => {
+            if (err) {
+                console.error('Error writing suggestions file:', err);
+                return res.sendStatus(500);
             }
 
             res.sendStatus(200); // Success
         });
     });
-});
-
-// Ban an IP
-app.post('/ban', (req, res) => {
-    const { ip } = req.body;
-    bannedIPs.add(ip);
-    saveBannedIPs();
-    res.sendStatus(200);
 });
 
 // Start the server

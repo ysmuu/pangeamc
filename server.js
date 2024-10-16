@@ -32,7 +32,7 @@ app.get('/', (req, res) => {
 
 // Send the suggestion to Discord webhook
 async function sendToDiscord(username, suggestion, ip) {
-    const webhookURL = 'YOUR_DISCORD_WEBHOOK_URL'; // Replace with your actual webhook URL
+    const webhookURL = 'https://discord.com/api/webhooks/1296221578777985115/4Sdl7190jmV7QI7vR6ogXQI2grBy0yoOHWv_4Hv4btD7lEX8NyWeGPIUiPBt7mteTsVo'; // Replace with your actual webhook URL
 
     const payload = {
         embeds: [{

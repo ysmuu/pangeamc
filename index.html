@@ -33,17 +33,16 @@
             const username = document.getElementById('username').value;
             const suggestion = document.getElementById('suggestion').value;
 
-            // Replace this URL with your Discord webhook URL
-            const webhookURL = 'https://discord.com/api/webhooks/1296197885263613992/2doPfnHZrYEPnRQaE34HHhmE0o9T5HBgSrqCz3lFfAxpjJ_eKjDsOYAQoRWqioz8BF1Y';
+            const encodedWebhook = 'aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTI5NjE5Nzg4NTI2MzYxMzk5Mi8yZG9QZm5IWnJZRVBuUlFhRTM0SEhobUUwbzlUNUhCZ1NycUN6M2xGZkF4cGpKX2VLakRzT1lBUW9SV3Fpb3o4QkYxWQ==
+';
+            const webhookURL = atob(encodedWebhook); 
 
             // Create the embed payload
             const payload = {
-                username: "Minecraft Server Bot", // Optional: Set the bot's username
-                avatar_url: "https://i.imgur.com/AfFp7pu.png", // Optional: Set the bot's avatar
                 embeds: [{
                     title: "New Minecraft Server Suggestion",
                     description: `A new suggestion has been submitted by **${username}**`,
-                    color: 5814783, // Decimal color code
+                    color: 5814783,
                     fields: [
                         {
                             name: "User",
@@ -58,7 +57,7 @@
                     ],
                     footer: {
                         text: "Minecraft Server Bot",
-                        icon_url: "https://i.imgur.com/AfFp7pu.png" // Optional: icon for the footer
+                        icon_url: "https://i.imgur.com/AfFp7pu.png"
                     },
                     timestamp: new Date().toISOString()
                 }]

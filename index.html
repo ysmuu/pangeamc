@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minecraft Server Suggestions</title>
     <style>
-        /* Styling same as before */
+        /* Styling */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background-color: #2d2d2d; color: #f0f0f0; display: flex; justify-content: center; align-items: center; height: 100vh; }
         .container { background-color: #3e3e3e; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 500px; width: 100%; text-align: center; }
@@ -34,13 +34,16 @@
             const suggestion = document.getElementById('suggestion').value;
 
             // Replace this URL with your Discord webhook URL
-            const webhookURL = 'https://discord.com/api/webhooks/1296197885263613992/2doPfnHZrYEPnRQaE34HHhmE0o9T5HBgSrqCz3lFfAxpjJ_eKjDsOYAQoRWqioz8BF1Y';
+            const webhookURL = 'YOUR_DISCORD_WEBHOOK_URL';
 
             // Create the embed payload
             const payload = {
+                username: "Minecraft Server Bot", // Optional: Set the bot's username
+                avatar_url: "https://i.imgur.com/AfFp7pu.png", // Optional: Set the bot's avatar
                 embeds: [{
                     title: "New Minecraft Server Suggestion",
-                    color: 5814783, // Hex color converted to decimal (e.g., #58D68D -> 5814783)
+                    description: `A new suggestion has been submitted by **${username}**`,
+                    color: 5814783, // Decimal color code
                     fields: [
                         {
                             name: "User",

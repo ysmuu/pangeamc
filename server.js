@@ -20,7 +20,7 @@ function saveBannedIPs() {
     fs.writeFileSync('banned_ips.json', JSON.stringify(Array.from(bannedIPs)), 'utf-8');
 }
 
-// Middleware to serve static files
+// Middleware to serve static files and parse JSON
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
@@ -31,7 +31,8 @@ app.get('/', (req, res) => {
 
 // Handle suggestion submissions
 app.post('/suggest', (req, res) => {
-    const { username, suggestion, ip } = req.body;
+    const { username, suggestion } = req.body;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress; // Get IP address
 
     // Check if IP is banned
     if (bannedIPs.has(ip)) {
@@ -55,13 +56,13 @@ app.post('/suggest', (req, res) => {
         logs.push(logEntry);
 
         // Write the updated logs back to the file
-        fs.writeFile('logs.json', JSON.stringify(logs, null, 2), err => {
+        fs.writeFile('logs.json', JSON.stringify(logs, null, 2), (err) => {
             if (err) {
                 console.error('Error writing logs:', err);
                 return res.sendStatus(500);
             }
 
-            res.sendStatus(200);
+            res.sendStatus(200); // Success
         });
     });
 });

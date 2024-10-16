@@ -5,6 +5,22 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+let bannedIPs = new Set();
+
+// Load banned IPs from a file (if you want to persist bans)
+function loadBannedIPs() {
+    if (fs.existsSync('banned_ips.json')) {
+        const data = fs.readFileSync('banned_ips.json', 'utf-8');
+        bannedIPs = new Set(JSON.parse(data));
+    }
+}
+
+// Save banned IPs to a file
+function saveBannedIPs() {
+    fs.writeFileSync('banned_ips.json', JSON.stringify(Array.from(bannedIPs)), 'utf-8');
+}
+
+// Middleware to serve static files
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
@@ -16,6 +32,11 @@ app.get('/', (req, res) => {
 // Handle suggestion submissions
 app.post('/suggest', (req, res) => {
     const { username, suggestion, ip } = req.body;
+
+    // Check if IP is banned
+    if (bannedIPs.has(ip)) {
+        return res.status(403).send('Your IP has been banned from making suggestions.');
+    }
 
     // Create a log entry
     const logEntry = { username, suggestion, ip };
@@ -40,32 +61,21 @@ app.post('/suggest', (req, res) => {
                 return res.sendStatus(500);
             }
 
-            // Send the webhook (optional)
-            const webhookURL = atob('aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTI5NjIyMTU3ODc3Nzk4NTExNS80U2RsNzE5MGptVjdRSTd2UjZvZ1hRSTJnckJ5MHlvT0hXdl80SHY0YnREN2xFWDhOeVdlR1BJVWlQQnQ3bXRlVHNWbw==');
-            const payload = {
-                username: "Suggestion Bot",
-                embeds: [{
-                    title: "New Suggestion Submitted",
-                    description: `**${username}**: ${suggestion}`,
-                    fields: [
-                        { name: "IP Address", value: ip }
-                    ],
-                    timestamp: new Date().toISOString()
-                }]
-            };
-
-            fetch(webhookURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).catch(err => console.error('Webhook error:', err));
-
             res.sendStatus(200);
         });
     });
 });
 
+// Ban an IP
+app.post('/ban', (req, res) => {
+    const { ip } = req.body;
+    bannedIPs.add(ip);
+    saveBannedIPs();
+    res.sendStatus(200);
+});
+
 // Start the server
 app.listen(PORT, () => {
+    loadBannedIPs(); // Load banned IPs when server starts
     console.log(`Server is running on http://localhost:${PORT}`);
 });

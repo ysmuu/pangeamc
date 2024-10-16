@@ -62,39 +62,7 @@ app.post('/suggest', (req, res) => {
                 return res.sendStatus(500);
             }
 
-            // Now send the webhook to Discord
-            const webhookPayload = {
-                embeds: [{
-                    title: "New Minecraft Server Suggestion",
-                    description: `A new suggestion has been submitted by **${username}**`,
-                    color: 5814783,
-                    fields: [
-                        { name: "User", value: username, inline: true },
-                        { name: "Suggestion", value: suggestion, inline: false }
-                    ],
-                    footer: { text: "PangeaMC stupid suggestion bot", icon_url: "https://i.imgur.com/Y1dPLe5.png" },
-                    timestamp: new Date().toISOString()
-                }]
-            };
-
-            // Send the webhook to Discord
-            fetch('https://discord.com/api/webhooks/1296221578777985115/4Sdl7190jmV7QI7vR6ogXQI2grBy0yoOHWv_4Hv4btD7lEX8NyWeGPIUiPBt7mteTsVo', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(webhookPayload)
-            })
-            .then(discordResponse => {
-                if (discordResponse.ok) {
-                    res.sendStatus(200); // Success
-                } else {
-                    console.error('Error sending webhook to Discord:', discordResponse.statusText);
-                    res.sendStatus(500); // Failed to send webhook
-                }
-            })
-            .catch(webhookError => {
-                console.error('Error sending webhook to Discord:', webhookError);
-                res.sendStatus(500); // Error while sending webhook
-            });
+            res.sendStatus(200); // Success
         });
     });
 });

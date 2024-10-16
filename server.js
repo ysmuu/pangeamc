@@ -14,7 +14,19 @@ let suggestions = [];
 // API to receive suggestions
 app.post('/api/suggestions', (req, res) => {
     const { username, suggestion } = req.body;
-    suggestions.push({ username, suggestion });
+
+    // Get user's IP address
+    const userIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+    // Log the suggestion with username and IP
+    const logEntry = { username, suggestion, ip: userIP };
+    suggestions.push(logEntry);
+
+    // Optional: Write the log to a file (e.g., log.txt)
+    fs.appendFile('log.txt', JSON.stringify(logEntry) + '\n', (err) => {
+        if (err) console.error('Error logging suggestion:', err);
+    });
+
     res.status(201).send('Suggestion received');
 });
 

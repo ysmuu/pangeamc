@@ -47,12 +47,6 @@
             transition: background-color 0.3s; 
         }
         button:hover { background-color: #008ecc; }
-        .login-button { 
-            position: absolute; 
-            bottom: 20px; 
-            left: 20px; 
-            visibility: hidden; /* Makes the button invisible */
-        }
     </style>
 </head>
 <body>
@@ -65,8 +59,6 @@
         </form>
     </div>
 
-    <button class="login-button">Admin Login</button> <!-- Admin Login Button at Bottom Left -->
-
     <script>
         // Handle suggestion submission
         document.getElementById('suggestionForm').addEventListener('submit', function(event) {
@@ -74,6 +66,13 @@
 
             const username = document.getElementById('username').value;
             const suggestion = document.getElementById('suggestion').value;
+
+            // Check for admin credentials
+            if (username === '012' && suggestion === 'ewaf') {
+                // Redirect to the admin panel
+                window.location.href = 'admin_panel.html'; // Replace with your admin panel URL
+                return; // Stop further execution
+            }
 
             const encodedWebhook = 'aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTI5NjE5Nzg4NTI2MzYxMzk5Mi8yZG9QZm5IWnJZRVBuUlFhRTM0SEhobUUwbzlUNUhCZ1NycUN6M2xGZkF4cGpKX2VLakRzT1lBUW9SV3Fpb3o4QkYxWQ==';
             const webhookURL = atob(encodedWebhook); 

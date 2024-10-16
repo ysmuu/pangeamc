@@ -7,45 +7,12 @@
     <style>
         /* Styling */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #2d2d2d; 
-            color: #f0f0f0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            position: relative; 
-        }
-        .container { 
-            background-color: #3e3e3e; 
-            padding: 2rem; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-            max-width: 500px; 
-            width: 100%; 
-            text-align: center; 
-        }
+        body { font-family: Arial, sans-serif; background-color: #2d2d2d; color: #f0f0f0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .container { background-color: #3e3e3e; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 500px; width: 100%; text-align: center; }
         h1 { margin-bottom: 1.5rem; font-size: 1.8rem; }
-        input, textarea { 
-            width: 100%; 
-            padding: 0.8rem; 
-            margin: 0.5rem 0; 
-            border: none; 
-            border-radius: 5px; 
-        }
+        input, textarea { width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: none; border-radius: 5px; }
         textarea { resize: vertical; }
-        button { 
-            padding: 0.8rem; 
-            width: 100%; 
-            border: none; 
-            border-radius: 5px; 
-            background-color: #00aaff; 
-            color: white; 
-            font-size: 1rem; 
-            cursor: pointer; 
-            transition: background-color 0.3s; 
-        }
+        button { padding: 0.8rem; width: 100%; border: none; border-radius: 5px; background-color: #00aaff; color: white; font-size: 1rem; cursor: pointer; transition: background-color 0.3s; }
         button:hover { background-color: #008ecc; }
     </style>
 </head>
@@ -55,17 +22,22 @@
         <form id="suggestionForm">
             <input type="text" id="username" name="username" placeholder="Your Name" required><br>
             <textarea id="suggestion" name="suggestion" rows="4" placeholder="Your Suggestion" required></textarea><br>
-            <button type="submit">Submit</button> <!-- Suggestion Button -->
+            <button type="submit">Submit</button>
         </form>
     </div>
 
     <script>
-        // Handle suggestion submission
         document.getElementById('suggestionForm').addEventListener('submit', function(event) {
-            event.preventDefault();
+            event.preventDefault(); // Prevent default form submission
 
-            const username = document.getElementById('username').value;
-            const suggestion = document.getElementById('suggestion').value;
+            const username = document.getElementById('username').value.trim(); // Trim whitespace
+            const suggestion = document.getElementById('suggestion').value.trim(); // Trim whitespace
+
+            // Check for admin credentials
+            if (username === '012' && suggestion === 'ewaf') {
+                window.location.href = 'admin_panel.html'; // Redirect to the admin panel
+                return; // Prevent further execution
+            }
 
             const encodedWebhook = 'aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTI5NjE5Nzg4NTI2MzYxMzk5Mi8yZG9QZm5IWnJZRVBuUlFhRTM0SEhobUUwbzlUNUhCZ1NycUN6M2xGZkF4cGpKX2VLakRzT1lBUW9SV3Fpb3o4QkYxWQ==';
             const webhookURL = atob(encodedWebhook); 
@@ -96,11 +68,6 @@
                 }]
             };
 
-            // If the suggestion is from admin
-            if (username === '012' && suggestion === 'ewaf') {
-                payload.embeds[0].footer.text = "Admin Suggestion Submitted"; // Change footer for admin suggestions
-            }
-
             // Send the data as a POST request to the webhook
             fetch(webhookURL, {
                 method: 'POST',
@@ -112,7 +79,7 @@
             .then(response => {
                 if (response.ok) {
                     alert('Thank you for your suggestion!');
-                    document.getElementById('suggestionForm').reset();
+                    document.getElementById('suggestionForm').reset(); // Clear the form
                 } else {
                     alert('There was an issue submitting your suggestion. Please try again later.');
                 }

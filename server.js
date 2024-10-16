@@ -1,14 +1,13 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch'); // Make sure to install node-fetch
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 let bannedIPs = new Set();
 
-// Load banned IPs from a file
+// Load banned IPs from a file (if you want to persist bans)
 function loadBannedIPs() {
     if (fs.existsSync('banned_ips.json')) {
         const data = fs.readFileSync('banned_ips.json', 'utf-8');
@@ -30,61 +29,18 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Send the suggestion to Discord webhook
-async function sendToDiscord(username, suggestion, ip) {
-    const webhookURL = 'https://discord.com/api/webhooks/1296221578777985115/4Sdl7190jmV7QI7vR6ogXQI2grBy0yoOHWv_4Hv4btD7lEX8NyWeGPIUiPBt7mteTsVo'; // Replace with your actual webhook URL
-
-    const payload = {
-        embeds: [{
-            title: "New Minecraft Server Suggestion",
-            description: `A new suggestion has been submitted by **${username}**`,
-            color: 5814783,
-            fields: [
-                {
-                    name: "User",
-                    value: username,
-                    inline: true
-                },
-                {
-                    name: "Suggestion",
-                    value: suggestion,
-                    inline: false
-                },
-                {
-                    name: "IP Address",
-                    value: ip,
-                    inline: true
-                }
-            ],
-            footer: {
-                text: "PangeaMC suggestion bot",
-                icon_url: "https://i.imgur.com/Y1dPLe5.png"
-            },
-            timestamp: new Date().toISOString()
-        }]
-    };
-
-    const response = await fetch(webhookURL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to send webhook: ' + response.statusText);
-    }
-}
+// Serve admin panel
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin_panel.html'));
+});
 
 // Handle suggestion submissions
-app.post('/suggest', async (req, res) => {
+app.post('/suggest', (req, res) => {
     const { username, suggestion } = req.body;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress; // Get IP address
 
-    console.log('Received suggestion:', { username, suggestion, ip });
-
     // Check if IP is banned
     if (bannedIPs.has(ip)) {
-        console.log(`Banned IP tried to submit: ${ip}`);
         return res.status(403).send('Your IP has been banned from making suggestions.');
     }
 
@@ -105,20 +61,25 @@ app.post('/suggest', async (req, res) => {
         logs.push(logEntry);
 
         // Write the updated logs back to the file
-        fs.writeFile('logs.json', JSON.stringify(logs, null, 2), async (err) => {
+        fs.writeFile('logs.json', JSON.stringify(logs, null, 2), (err) => {
             if (err) {
                 console.error('Error writing logs:', err);
                 return res.sendStatus(500);
             }
 
-            try {
-                await sendToDiscord(username, suggestion, ip);
-                res.sendStatus(200); // Success
-            } catch (err) {
-                console.error('Error sending to Discord:', err);
-                res.sendStatus(500); // Sending to Discord failed
-            }
+            res.sendStatus(200); // Success
         });
+    });
+});
+
+// Get logs for the admin panel
+app.get('/logs', (req, res) => {
+    fs.readFile('logs.json', 'utf-8', (err, data) => {
+        if (err) {
+            console.error('Error reading logs:', err);
+            return res.sendStatus(500);
+        }
+        res.json(JSON.parse(data || '[]'));
     });
 });
 

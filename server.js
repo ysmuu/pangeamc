@@ -1,47 +1,37 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const session = require('express-session');
-
+const fs = require('fs');
 const app = express();
 const port = 3000;
 
 // Middleware
 app.use(bodyParser.json());
-app.use(session({ secret: 'your_secret_key', resave: false, saveUninitialized: true }));
+app.use(express.static('public')); // Serve static files (like admin_panel.html)
 
-// Dummy admin data (In production, use a secure database)
-const admins = [
-    { username: 'admin', password: 'password' } // Replace with a more secure password
-];
+// Store suggestions in-memory for simplicity (consider using a database for production)
+let suggestions = [];
 
-// Admin login route
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    const admin = admins.find(admin => admin.username === username && admin.password === password);
-    
-    if (admin) {
-        req.session.isAdmin = true; // Set session variable to mark admin as logged in
-        return res.status(200).send('Login successful!');
-    } else {
-        return res.status(401).send('Invalid credentials');
-    }
+// API to receive suggestions
+app.post('/api/suggestions', (req, res) => {
+    const { username, suggestion } = req.body;
+    suggestions.push({ username, suggestion });
+    res.status(201).send('Suggestion received');
 });
 
-// Middleware to check if admin is logged in
-const isAdmin = (req, res, next) => {
-    if (req.session.isAdmin) {
-        next(); // Proceed to the next middleware or route handler
-    } else {
-        res.status(403).send('Forbidden. Please log in as an admin.');
-    }
-};
-
-// Example protected route (to demonstrate admin access)
-app.get('/admin', isAdmin, (req, res) => {
-    res.send('Welcome to the admin dashboard!');
+// API to fetch suggestions
+app.get('/api/suggestions', (req, res) => {
+    res.json(suggestions);
 });
 
-// Start server
+// API to ban a user
+app.post('/api/ban/:username', (req, res) => {
+    const usernameToBan = req.params.username;
+    // Implement your banning logic here
+    suggestions = suggestions.filter(suggestion => suggestion.username !== usernameToBan);
+    res.status(200).send('User banned');
+});
+
+// Start the server
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server is running on http://localhost:${port}`);
 });

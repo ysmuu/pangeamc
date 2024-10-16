@@ -29,11 +29,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Serve admin panel
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin_panel.html'));
-});
-
 // Handle suggestion submissions
 app.post('/suggest', (req, res) => {
     const { username, suggestion } = req.body;
@@ -57,7 +52,7 @@ app.post('/suggest', (req, res) => {
         // Parse existing suggestions or create a new array
         const suggestions = data.length ? JSON.parse(data) : [];
 
-        // Add the new suggestion entry
+        // Add the new suggestion
         suggestions.push(logEntry);
 
         // Write the updated suggestions back to the file
@@ -67,30 +62,40 @@ app.post('/suggest', (req, res) => {
                 return res.sendStatus(500);
             }
 
-            res.sendStatus(200); // Success
+            // Now send the webhook to Discord
+            const webhookPayload = {
+                embeds: [{
+                    title: "New Minecraft Server Suggestion",
+                    description: `A new suggestion has been submitted by **${username}**`,
+                    color: 5814783,
+                    fields: [
+                        { name: "User", value: username, inline: true },
+                        { name: "Suggestion", value: suggestion, inline: false }
+                    ],
+                    footer: { text: "PangeaMC stupid suggestion bot", icon_url: "https://i.imgur.com/Y1dPLe5.png" },
+                    timestamp: new Date().toISOString()
+                }]
+            };
+
+            // Send the webhook to Discord
+            fetch('https://discord.com/api/webhooks/1296221578777985115/4Sdl7190jmV7QI7vR6ogXQI2grBy0yoOHWv_4Hv4btD7lEX8NyWeGPIUiPBt7mteTsVo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(webhookPayload)
+            })
+            .then(discordResponse => {
+                if (discordResponse.ok) {
+                    res.sendStatus(200); // Success
+                } else {
+                    console.error('Error sending webhook to Discord:', discordResponse.statusText);
+                    res.sendStatus(500); // Failed to send webhook
+                }
+            })
+            .catch(webhookError => {
+                console.error('Error sending webhook to Discord:', webhookError);
+                res.sendStatus(500); // Error while sending webhook
+            });
         });
-    });
-});
-
-// Get suggestions for the admin panel
-app.get('/suggestions', (req, res) => {
-    fs.readFile('suggestions.json', 'utf-8', (err, data) => {
-        if (err) {
-            console.error('Error reading suggestions:', err);
-            return res.sendStatus(500);
-        }
-        res.json(JSON.parse(data || '[]'));
-    });
-});
-
-// Get logs for the admin panel
-app.get('/logs', (req, res) => {
-    fs.readFile('logs.json', 'utf-8', (err, data) => {
-        if (err) {
-            console.error('Error reading logs:', err);
-            return res.sendStatus(500);
-        }
-        res.json(JSON.parse(data || '[]'));
     });
 });
 

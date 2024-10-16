@@ -47,28 +47,39 @@ app.post('/suggest', (req, res) => {
     // Create a log entry
     const logEntry = { username, suggestion, ip };
 
-    // Read existing logs
-    fs.readFile('logs.json', (err, data) => {
+    // Read existing suggestions
+    fs.readFile('suggestions.json', (err, data) => {
         if (err) {
-            console.error('Error reading logs:', err);
+            console.error('Error reading suggestions:', err);
             return res.sendStatus(500);
         }
 
-        // Parse existing logs or create a new array
-        const logs = data.length ? JSON.parse(data) : [];
+        // Parse existing suggestions or create a new array
+        const suggestions = data.length ? JSON.parse(data) : [];
 
-        // Add the new log entry
-        logs.push(logEntry);
+        // Add the new suggestion entry
+        suggestions.push(logEntry);
 
-        // Write the updated logs back to the file
-        fs.writeFile('logs.json', JSON.stringify(logs, null, 2), (err) => {
+        // Write the updated suggestions back to the file
+        fs.writeFile('suggestions.json', JSON.stringify(suggestions, null, 2), (err) => {
             if (err) {
-                console.error('Error writing logs:', err);
+                console.error('Error writing suggestions:', err);
                 return res.sendStatus(500);
             }
 
             res.sendStatus(200); // Success
         });
+    });
+});
+
+// Get suggestions for the admin panel
+app.get('/suggestions', (req, res) => {
+    fs.readFile('suggestions.json', 'utf-8', (err, data) => {
+        if (err) {
+            console.error('Error reading suggestions:', err);
+            return res.sendStatus(500);
+        }
+        res.json(JSON.parse(data || '[]'));
     });
 });
 

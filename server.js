@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 
 let bannedIPs = new Set();
 
-// Load banned IPs from a file (if you want to persist bans)
+// Load banned IPs from a file
 function loadBannedIPs() {
     if (fs.existsSync('banned_ips.json')) {
         const data = fs.readFileSync('banned_ips.json', 'utf-8');
@@ -46,20 +46,26 @@ app.post('/suggest', (req, res) => {
     fs.readFile('suggestions.json', (err, data) => {
         if (err) {
             console.error('Error reading suggestions:', err);
-            return res.sendStatus(500);
+            return res.status(500).send('Error reading suggestions.');
         }
 
         // Parse existing suggestions or create a new array
-        const suggestions = data.length ? JSON.parse(data) : [];
+        let suggestions;
+        try {
+            suggestions = data.length ? JSON.parse(data) : [];
+        } catch (parseErr) {
+            console.error('Error parsing suggestions JSON:', parseErr);
+            return res.status(500).send('Error parsing suggestions.');
+        }
 
         // Add the new suggestion
         suggestions.push(logEntry);
 
         // Write the updated suggestions back to the file
-        fs.writeFile('suggestions.json', JSON.stringify(suggestions, null, 2), (err) => {
-            if (err) {
-                console.error('Error writing suggestions:', err);
-                return res.sendStatus(500);
+        fs.writeFile('suggestions.json', JSON.stringify(suggestions, null, 2), (writeErr) => {
+            if (writeErr) {
+                console.error('Error writing suggestions:', writeErr);
+                return res.status(500).send('Error writing suggestions.');
             }
 
             res.sendStatus(200); // Success

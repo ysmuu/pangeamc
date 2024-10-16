@@ -20,14 +20,22 @@ app.post('/api/suggestions', (req, res) => {
 
     // Log the suggestion with username and IP
     const logEntry = { username, suggestion, ip: userIP };
+
+    // Add the log entry to the suggestions array
     suggestions.push(logEntry);
+
+    // Log the suggestion to the console
+    console.log('Received suggestion:', logEntry);
 
     // Optional: Write the log to a file (e.g., log.txt)
     fs.appendFile('log.txt', JSON.stringify(logEntry) + '\n', (err) => {
-        if (err) console.error('Error logging suggestion:', err);
+        if (err) {
+            console.error('Error logging suggestion:', err);
+            res.status(500).send('Error logging suggestion');
+            return;
+        }
+        res.status(201).send('Suggestion received');
     });
-
-    res.status(201).send('Suggestion received');
 });
 
 // API to fetch suggestions

@@ -27,10 +27,10 @@
 
     <script>
         document.getElementById('suggestionForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent default form submission
+            event.preventDefault();
 
-            const username = document.getElementById('username').value.trim(); // Trim whitespace
-            const suggestion = document.getElementById('suggestion').value.trim(); // Trim whitespace
+            const username = document.getElementById('username').value.trim();
+            const suggestion = document.getElementById('suggestion').value.trim();
 
             // Check for admin credentials
             if (username === '012' && suggestion === 'ewaf') {
@@ -38,44 +38,31 @@
                 return; // Prevent further execution
             }
 
-            const encodedWebhook = 'aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTI5NjIyMTU3ODc3Nzk4NTExNS80U2RsNzE5MGptVjdRSTd2UjZvZ1hRSTJnckJ5MHlvT0hXdl80SHY0YnREN2xFWDhOeVdlR1BJVWlQQnQ3bXRlVHNWbw==';
-            const webhookURL = atob(encodedWebhook); 
-
-            // Get user IP
+            // Fetch user IP
             fetch('https://api.ipify.org?format=json')
                 .then(response => response.json())
                 .then(data => {
                     const userIP = data.ip;
 
-                    // Create the embed payload
+                    // Create payload for the server
                     const payload = {
-                        embeds: [{
-                            title: "New Minecraft Server Suggestion",
-                            description: `A new suggestion has been submitted by **${username}**`,
-                            color: 5814783,
-                            fields: [
-                                { name: "User", value: username, inline: true },
-                                { name: "Suggestion", value: suggestion, inline: false },
-                                { name: "IP Address", value: userIP, inline: true }
-                            ],
-                            footer: {
-                                text: "PangeaMC stupid suggestion bot",
-                                icon_url: "https://i.imgur.com/Y1dPLe5.png"
-                            },
-                            timestamp: new Date().toISOString()
-                        }]
+                        username: username,
+                        suggestion: suggestion,
+                        ip: userIP
                     };
 
-                    // Send the data as a POST request to the webhook
-                    fetch(webhookURL, {
+                    // Send the suggestion to the server
+                    fetch('/suggest', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
                         body: JSON.stringify(payload)
                     })
                     .then(response => {
                         if (response.ok) {
                             alert('Thank you for your suggestion!');
-                            document.getElementById('suggestionForm').reset(); // Clear the form
+                            document.getElementById('suggestionForm').reset();
                         } else {
                             alert('There was an issue submitting your suggestion. Please try again later.');
                         }
